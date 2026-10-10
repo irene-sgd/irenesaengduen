@@ -31,6 +31,20 @@
   ::selection { background: var(--text); color: var(--bg-base); }
 
 
+  .plane {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 64px;
+    height: 40px;
+    margin: -20px 0 0 -32px;
+    z-index: 100;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .plane svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .plane path { stroke: var(--text); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .js .plane { visibility: hidden; }
   .decor {
     position: fixed;
     inset: 0;
@@ -96,6 +110,13 @@
   @media (max-width: 900px) {
     .card { padding: 24px 16px; }
   }
+  @media (max-width: 640px) {
+    .card { padding-bottom: 128px; text-align: center; }
+    .role { max-width: none; }
+    .social { flex-direction: column; align-items: stretch; max-width: none; }
+    .social a { width: 100%; justify-content: center; }
+    .flower { left: 0; right: 0; margin-inline: auto; bottom: -2px; height: 112px; }
+  }
 </style>
 </head>
 <body>
@@ -145,10 +166,19 @@
       <img class="flower-head" src="drawings/artboard-15.svg" alt="">
     </div>
   </main>
+  <div class="plane" aria-hidden="true">
+    <svg viewBox="0 0 64 40">
+      <path d="M3 19 61 3 38 37 29 25Z" fill="#fff"/>
+      <path d="M29 25 26 34 38 37Z" fill="#dcdcdc"/>
+      <path d="M29 25 61 3" fill="none"/>
+    </svg>
+  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
   <script>
     (function () {
       var items = gsap.utils.toArray(".deco");
+      gsap.registerPlugin(MotionPathPlugin);
       var mm = gsap.matchMedia();
 
       mm.add("(prefers-reduced-motion: no-preference)", function () {
@@ -203,6 +233,35 @@
             });
           });
         });
+
+        var flight;
+        function launchPlane() {
+          if (flight) flight.kill();
+          var W = innerWidth, H = innerHeight;
+          var pts = [
+            { x: -0.12 * W, y: 0.78 * H },
+            { x: 0.2 * W, y: 0.3 * H },
+            { x: 0.42 * W, y: 0.62 * H },
+            { x: 0.62 * W, y: 0.12 * H },
+            { x: 0.84 * W, y: 0.34 * H },
+            { x: 1.12 * W, y: 0.08 * H }
+          ];
+          gsap.set(".plane", { visibility: "visible" });
+          flight = gsap.to(".plane", {
+            motionPath: { path: pts, curviness: 1.6, autoRotate: true },
+            duration: 10,
+            delay: 2.2,
+            ease: "power1.inOut",
+            repeat: -1,
+            repeatDelay: 4
+          });
+        }
+        launchPlane();
+        gsap.to(".plane svg", { y: -4, rotation: 5, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: -1 });
+        var resizeTimer;
+        function onResize() { clearTimeout(resizeTimer); resizeTimer = setTimeout(launchPlane, 200); }
+        addEventListener("resize", onResize);
+        return function () { removeEventListener("resize", onResize); };
       });
 
       mm.add("(prefers-reduced-motion: reduce)", function () {
