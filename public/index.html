@@ -132,6 +132,12 @@
     .social a { width: 100%; justify-content: center; }
     .flower { left: 0; right: 0; margin-inline: auto; bottom: -2px; height: 112px; }
   }
+  @media (min-width: 641px) {
+    body { display: grid; place-items: center; min-height: 100vh; padding: 24px 8px; }
+    .stack { padding: 0; max-width: 560px; }
+    .card.sheet { position: relative; top: auto; height: auto; }
+    .player { position: relative; top: auto; }
+  }
 </style>
 </head>
 <body>
@@ -279,12 +285,6 @@
         });
 
 
-        gsap.fromTo(".card.sheet", { scale: 1, filter: "brightness(1)" }, {
-          scale: 0.93,
-          filter: "brightness(0.92)",
-          ease: "none",
-          scrollTrigger: { trigger: ".player", start: "top bottom", end: "bottom bottom", scrub: true }
-        });
 
         var flight;
         function launchPlane() {
@@ -314,6 +314,15 @@
         function onResize() { clearTimeout(resizeTimer); resizeTimer = setTimeout(launchPlane, 200); }
         addEventListener("resize", onResize);
         return function () { removeEventListener("resize", onResize); };
+      });
+
+      mm.add("(prefers-reduced-motion: no-preference) and (max-width: 640px)", function () {
+        gsap.fromTo(".card.sheet", { scale: 1, filter: "brightness(1)" }, {
+          scale: 0.93,
+          filter: "brightness(0.92)",
+          ease: "none",
+          scrollTrigger: { trigger: ".player", start: "top bottom", end: "bottom bottom", scrub: true }
+        });
       });
 
       mm.add("(prefers-reduced-motion: reduce)", function () {
