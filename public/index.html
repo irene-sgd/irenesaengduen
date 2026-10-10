@@ -54,6 +54,7 @@
   .deco-l { width: clamp(72px, 11vw, 170px); }
   .js .deco { opacity: 0; }
 
+  .panel { display: contents; }
   .stack { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 576px; margin: 0 auto; padding: 8px; }
   .sheet {
     flex: none;
@@ -133,10 +134,19 @@
     .flower { left: 0; right: 0; margin-inline: auto; bottom: -2px; height: 112px; }
   }
   @media (min-width: 641px) {
-    body { display: grid; place-items: center; min-height: 100vh; padding: 24px 8px; }
-    .stack { padding: 0; max-width: 560px; }
-    .card.sheet { position: relative; top: auto; height: auto; }
-    .player { position: relative; top: auto; }
+    body { display: block; min-height: 0; padding: 0; }
+    .stack { display: block; max-width: none; padding: 0; }
+    .panel {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      height: 100svh;
+      padding: 8px;
+    }
+    .card.sheet { position: relative; top: auto; height: auto; max-width: 560px; transform-origin: 50% 50%; }
+    .player { position: relative; top: auto; width: 100%; max-width: 560px; }
   }
 </style>
 </head>
@@ -161,6 +171,7 @@
     <img class="deco deco-m" src="drawings/artboard-3.svg" alt="" data-corner="br" data-r="6" style="right:-2vw;bottom:48vh">
   </div>
   <div class="stack">
+  <div class="panel">
   <main class="card sheet">
     <h1>Irene Saengduen</h1>
     <p class="aka">(Or you can call me Lynn)</p>
@@ -188,6 +199,8 @@
       <img class="flower-head" src="drawings/artboard-15.svg" alt="">
     </div>
   </main>
+  </div>
+  <div class="panel">
   <section class="player" aria-label="Spotify playlist">
     <div class="player-frame" id="player-frame">
       <iframe title="Spotify playlist" data-testid="embed-iframe" src="https://open.spotify.com/embed/playlist/636sKfjI8cfLiDmdxRaysD?utm_source=generator&amp;si=6b4c72a20c384edf" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
@@ -197,6 +210,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
   </section>
+  </div>
   </div>
   <div class="plane" aria-hidden="true">
     <svg viewBox="0 0 64 40">
@@ -316,13 +330,21 @@
         return function () { removeEventListener("resize", onResize); };
       });
 
-      mm.add("(prefers-reduced-motion: no-preference) and (max-width: 640px)", function () {
-        gsap.fromTo(".card.sheet", { scale: 1, filter: "brightness(1)" }, {
-          scale: 0.93,
+      function stackTween(trigger, end, to) {
+        gsap.fromTo(".card.sheet", { scale: 1, opacity: 1, filter: "brightness(1)" }, {
+          scale: to.scale,
+          opacity: to.opacity,
           filter: "brightness(0.92)",
           ease: "none",
-          scrollTrigger: { trigger: ".player", start: "top bottom", end: "bottom bottom", scrub: true }
+          scrollTrigger: { trigger: trigger, start: "top bottom", end: end, scrub: true }
         });
+      }
+      mm.add("(prefers-reduced-motion: no-preference) and (min-width: 641px)", function () {
+        // cards are natural size and centered: the outgoing card fades so only one holds the focal point
+        stackTween(".panel:last-child", "top top", { scale: 0.88, opacity: 0 });
+      });
+      mm.add("(prefers-reduced-motion: no-preference) and (max-width: 640px)", function () {
+        stackTween(".player", "bottom bottom", { scale: 0.93, opacity: 1 });
       });
 
       mm.add("(prefers-reduced-motion: reduce)", function () {
